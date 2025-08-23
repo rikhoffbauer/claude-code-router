@@ -21,7 +21,7 @@ permissions:
 
 jobs:
   triage-issues:
-    timeout-minutes: 5
+    timeout-minutes: 15
     runs-on: 'ubuntu-latest'
     steps:
       - name: 'Checkout repository'
