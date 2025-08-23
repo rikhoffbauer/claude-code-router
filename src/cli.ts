@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 import { run } from "./index";
 import { showStatus } from "./utils/status";
 import { executeCodeCommand } from "./utils/codeCommand";

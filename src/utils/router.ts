@@ -10,6 +10,17 @@ import { getNextModel } from "./modelRotation";
 
 const enc = get_encoding("cl100k_base");
 
+const resolveRouterValue = (v: string | string[] | undefined): string | undefined => {
+  if (Array.isArray(v)) {
+    for (const item of v) {
+      const trimmed = item?.trim();
+      if (trimmed) return trimmed;
+    }
+    return undefined;
+  }
+  return typeof v === "string" ? v.trim() : undefined;
+};
+
 const calculateTokenCount = (
   messages: MessageParam[],
   system: any,
@@ -100,7 +111,11 @@ const getUseModel = async (
       "threshold:",
       longContextThreshold
     );
-    return getNextModel("longContext", config.Router.longContext);
+    return (
+      getNextModel("longContext", config.Router.longContext) ??
+      resolveRouterValue(config.Router.longContext) ??
+      resolveRouterValue(config.Router?.default)
+    );
   }
   if (
     req.body?.system?.length > 1 &&
@@ -123,21 +138,37 @@ const getUseModel = async (
     config.Router.background
   ) {
     log("Using background model for ", req.body.model);
-    return getNextModel("background", config.Router.background);
+    return (
+      getNextModel("background", config.Router.background) ??
+      resolveRouterValue(config.Router.background) ??
+      resolveRouterValue(config.Router?.default)
+    );
   }
   // if exits thinking, use the think model
   if (req.body.thinking && config.Router.think) {
     log("Using think model for ", req.body.thinking);
-    return getNextModel("think", config.Router.think);
+    return (
+      getNextModel("think", config.Router.think) ??
+      resolveRouterValue(config.Router.think) ??
+      resolveRouterValue(config.Router?.default)
+    );
   }
   if (
     Array.isArray(req.body.tools) &&
     req.body.tools.some((tool: any) => tool.type?.startsWith("web_search")) &&
     config.Router.webSearch
   ) {
-    return getNextModel("webSearch", config.Router.webSearch);
+    return (
+      getNextModel("webSearch", config.Router.webSearch) ??
+      resolveRouterValue(config.Router.webSearch) ??
+      resolveRouterValue(config.Router?.default)
+    );
   }
-  return getNextModel("default", config.Router!.default);
+  return (
+    getNextModel("default", config.Router!.default) ??
+    resolveRouterValue(config.Router!.default) ??
+    resolveRouterValue(config.Router?.default)
+  );
 };
 
 export const router = async (req: any, _res: any, config: any) => {

@@ -18,7 +18,7 @@ export const initModelRotation = (config: any) => {
   ROUTER_FIELDS.forEach((field) => {
     const value = router[field];
     if (Array.isArray(value)) {
-      const models = value.filter(Boolean);
+      const models = value.map((m) => m?.trim()).filter(Boolean);
       if (models.length > 0) {
         modelMap.set(field, { index: 0, models });
       }
@@ -31,11 +31,33 @@ export const getNextModel = (
   value: string | string[] | undefined
 ): string | undefined => {
   if (Array.isArray(value)) {
-    const state = modelMap.get(field);
-    if (!state || state.models.length === 0) return undefined;
+    const models = value.map((m) => m?.trim()).filter(Boolean);
+    if (models.length === 0) return undefined;
+    let state = modelMap.get(field);
+    if (!state) {
+      state = { index: 0, models };
+      modelMap.set(field, state);
+    } else {
+      state.models = models;
+      if (
+        typeof state.index !== "number" ||
+        state.index < 0 ||
+        state.index >= state.models.length
+      ) {
+        state.index = 0;
+      }
+    }
     const model = state.models[state.index];
     state.index = (state.index + 1) % state.models.length;
     return model;
   }
-  return value;
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed || undefined;
+  }
+  return undefined;
+};
+
+export const clearModelRotation = () => {
+  modelMap.clear();
 };

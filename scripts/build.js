@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 
 const { execSync } = require('child_process');
 const path = require('path');
@@ -20,9 +20,9 @@ try {
   // Check if node_modules exists in ui directory, if not install dependencies
   if (!fs.existsSync('ui/node_modules')) {
     console.log('Installing UI dependencies...');
-    execSync('cd ui && npm install', { stdio: 'inherit' });
+    execSync('cd ui && bun install', { stdio: 'inherit' });
   }
-  execSync('cd ui && npm run build', { stdio: 'inherit' });
+  execSync('cd ui && bun run build', { stdio: 'inherit' });
   
   // Copy the built UI index.html to dist
   console.log('Copying UI build artifacts...');
