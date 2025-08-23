@@ -128,7 +128,7 @@ async function run(options: RunOptions = {}) {
   });
   // Add async preHandler hook for authentication
   server.addHook("preHandler", async (req, reply) => {
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       const done = (err?: Error) => {
         if (err) reject(err);
         else resolve();
@@ -147,7 +147,6 @@ async function run(options: RunOptions = {}) {
       const providerName = (req.body.model || "").split(",")[0];
       const apiKey = getNextApiKey(providerName);
       if (apiKey) {
-        (req as any).apiKeyUsed = apiKey;
         await server.providerService.updateProvider(providerName, {
           apiKey,
         });

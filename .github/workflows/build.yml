@@ -1,0 +1,76 @@
+name: ci
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: build & test (bun ${{ matrix.bun-version }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CI: true
+    strategy:
+      fail-fast: false
+      matrix:
+        bun-version: [ 'latest' ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ matrix.bun-version }}
+
+      - name: Cache Bun package cache
+        uses: actions/cache@v4
+        with:
+          # Bun’s package cache lives under BUN_INSTALL/cache by default (~/.bun/install/cache)
+          path: |
+            ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-cache-${{ matrix.bun-version }}-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-cache-${{ matrix.bun-version }}-
+            ${{ runner.os }}-bun-cache-
+
+      - name: Install (frozen lockfile)
+        run: bun install --frozen-lockfile
+
+      - name: Type check
+        run: bun run typecheck
+        # Remove this step if you don't use TypeScript or don't have a script
+
+      - name: Build
+        id: build
+        run: bun run build
+
+      - name: Detect build output
+        id: dist_check
+        run: |
+          if [ -d dist ] && [ "$(ls -A dist)" ]; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload artifact (dist)
+        if: steps.dist_check.outputs.found == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.bun-version }}-${{ github.sha }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7
