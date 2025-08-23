@@ -7,6 +7,7 @@
   },
   "scripts": {
     "build": "node scripts/build.js",
+    "typecheck": "tsc -noEmit",
     "release": "npm run build && npm publish"
   },
   "keywords": [
@@ -30,6 +31,8 @@
   },
   "devDependencies": {
     "@types/node": "^24.0.15",
+    "@types/react": "^19.1.11",
+    "@types/react-dom": "^19.1.7",
     "esbuild": "^0.25.1",
     "fastify": "^5.4.0",
     "shx": "^0.4.0",
