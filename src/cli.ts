@@ -110,8 +110,8 @@ async function main() {
     case "code":
       if (!isServiceRunning()) {
         console.log("Service not running, starting service...");
-        const cliPath = join(__dirname, "cli.js");
-        const startProcess = spawn("node", [cliPath, "start"], {
+        const selfScript = process.argv[1];
+        const startProcess = spawn(process.execPath, [selfScript, "start"], {
           detached: true,
           stdio: "ignore",
         });
@@ -155,8 +155,8 @@ async function main() {
       // Check if service is running
       if (!isServiceRunning()) {
         console.log("Service not running, starting service...");
-        const cliPath = join(__dirname, "cli.js");
-        const startProcess = spawn("node", [cliPath, "start"], {
+        const selfScript = process.argv[1];
+        const startProcess = spawn(process.execPath, [selfScript, "start"], {
           detached: true,
           stdio: "ignore",
         });
@@ -205,7 +205,8 @@ async function main() {
             );
 
             // Try starting the service again
-            const restartProcess = spawn("node", [cliPath, "start"], {
+            const selfScript = process.argv[1];
+            const restartProcess  = spawn(process.execPath, [selfScript, "start"], {
               detached: true,
               stdio: "ignore",
             });
@@ -295,8 +296,8 @@ async function main() {
 
       // Start the service again in the background
       console.log("Starting claude code router service...");
-      const cliPath = join(__dirname, "cli.js");
-      const startProcess = spawn("node", [cliPath, "start"], {
+      const selfScript = process.argv[1];
+      const startProcess = spawn(process.execPath, [selfScript, "start"], {
         detached: true,
         stdio: "ignore",
       });
