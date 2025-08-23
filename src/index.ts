@@ -147,6 +147,10 @@ async function run(options: RunOptions = {}) {
       const providerName = (req.body.model || "").split(",")[0];
       const apiKey = getNextApiKey(providerName);
       if (apiKey) {
+<<<<<<< ours
+=======
+        (req as any).apiKeyUsed = apiKey;
+>>>>>>> theirs
         await server.providerService.updateProvider(providerName, {
           apiKey,
         });
@@ -210,11 +214,40 @@ async function run(options: RunOptions = {}) {
             apiKey,
           });
         }
+<<<<<<< ours
       } else if (usedKey) {
+=======
+      } else if (usedKey && reply.statusCode < 400) {
+        // Only mark as success for non-error responses
+>>>>>>> theirs
         reportSuccess(providerName, usedKey);
       }
     }
   });
+<<<<<<< ours
+=======
+
+  // Ensure rate limit errors from providers still propagate
+  server.addHook("onError", async (req, _reply, error) => {
+    if (req.url.startsWith("/v1/messages")) {
+      const providerName = (req.body.model || "").split(",")[0];
+      const usedKey = (req as any).apiKeyUsed;
+      if (usedKey) {
+        if ((error as any)?.statusCode === 429) {
+          reportRateLimit(providerName, usedKey);
+          const apiKey = peekNextApiKey(providerName);
+          if (apiKey) {
+            await server.providerService.updateProvider(providerName, {
+              apiKey,
+            });
+          }
+        } else {
+          reportSuccess(providerName, usedKey);
+        }
+      }
+    }
+  });
+>>>>>>> theirs
   server.start();
 }
 
