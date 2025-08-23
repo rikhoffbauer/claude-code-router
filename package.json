@@ -39,7 +39,6 @@
   "publishConfig": {
     "ignore": [
       "!build/",
-      "src/",
       "screenshots/"
     ]
   }
