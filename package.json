@@ -2,7 +2,10 @@
   "name": "@musistudio/claude-code-router",
   "version": "1.0.43",
   "description": "Use Claude Code without an Anthropics account and route it to another LLM provider",
-  "bin": "src/cli.ts",
+  "bin": {
+    "ccr": "src/cli.ts",
+    "claude-code-router": "src/cli.ts"
+  },
   "scripts": {
     "build": "bun scripts/build.js",
     "typecheck": "tsc -noEmit",
