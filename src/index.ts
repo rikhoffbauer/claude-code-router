@@ -10,6 +10,7 @@ import {
   reportRateLimit,
   reportSuccess,
 } from "./utils/apiKeyRotation";
+import { initModelRotation } from "./utils/modelRotation";
 import { createServer } from "./server";
 import { router } from "./utils/router";
 import { apiKeyAuth } from "./middleware/auth";
@@ -62,6 +63,7 @@ async function run(options: RunOptions = {}) {
   await cleanupLogFiles();
   const config = await initConfig();
   initApiKeyRotation(config);
+  initModelRotation(config);
 
   // Configure logging based on config
   configureLogging(config);

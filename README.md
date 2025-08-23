@@ -347,6 +347,18 @@ The `Router` object defines which model to use for different scenarios:
 - `longContextThreshold` (optional): The token count threshold for triggering the long context model. Defaults to 60000 if not specified.
 - `webSearch`: Used for handling web search tasks and this requires the model itself to support the feature. If you're using openrouter, you need to add the `:online` suffix after the model name.
 
+Each of these fields accepts either a single `"provider,model"` string or an array of such strings. When an array is provided, the router will rotate through the models in a round-robin fashion. Models in the array may come from different providers, and model rotation works seamlessly alongside API key rotation.
+
+```json
+"Router": {
+  "default": [
+    "openrouter,anthropic/claude-3.5-sonnet",
+    "deepseek,deepseek-chat"
+  ],
+  "background": "openrouter,anthropic/claude-3-haiku"
+}
+```
+
 You can also switch models dynamically in Claude Code with the `/model` command:
 `/model provider_name,model_name`
 Example: `/model openrouter,anthropic/claude-3.5-sonnet`

@@ -320,6 +320,18 @@ Transformers 允许您修改请求和响应负载，以确保与不同提供商 
 -   `longContextThreshold` (可选): 触发长上下文模型的令牌数阈值。如果未指定，默认为 60000。
 -   `webSearch`: 用于处理网络搜索任务，需要模型本身支持。如果使用`openrouter`需要在模型后面加上`:online`后缀。
 
+这些字段可以是单个 `"provider,model"` 字符串，也可以是由此类字符串组成的数组。当提供数组时，路由器会按顺序在模型之间轮换。数组中的模型可以来自不同的提供商，模型轮换与 API Key 轮换可以同时启用并正常工作。
+
+```json
+"Router": {
+  "default": [
+    "openrouter,anthropic/claude-3.5-sonnet",
+    "deepseek,deepseek-chat"
+  ],
+  "background": "openrouter,anthropic/claude-3-haiku"
+}
+```
+
 您还可以使用 `/model` 命令在 Claude Code 中动态切换模型：
 `/model provider_name,model_name`
 示例: `/model openrouter,anthropic/claude-3.5-sonnet`

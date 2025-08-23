@@ -6,6 +6,7 @@ import {
 import { get_encoding } from "tiktoken";
 import { log } from "./log";
 import { sessionUsageCache, Usage } from "./cache";
+import { getNextModel } from "./modelRotation";
 
 const enc = get_encoding("cl100k_base");
 
@@ -99,7 +100,7 @@ const getUseModel = async (
       "threshold:",
       longContextThreshold
     );
-    return config.Router.longContext;
+    return getNextModel("longContext", config.Router.longContext);
   }
   if (
     req.body?.system?.length > 1 &&
@@ -122,21 +123,21 @@ const getUseModel = async (
     config.Router.background
   ) {
     log("Using background model for ", req.body.model);
-    return config.Router.background;
+    return getNextModel("background", config.Router.background);
   }
   // if exits thinking, use the think model
   if (req.body.thinking && config.Router.think) {
     log("Using think model for ", req.body.thinking);
-    return config.Router.think;
+    return getNextModel("think", config.Router.think);
   }
   if (
     Array.isArray(req.body.tools) &&
     req.body.tools.some((tool: any) => tool.type?.startsWith("web_search")) &&
     config.Router.webSearch
   ) {
-    return config.Router.webSearch;
+    return getNextModel("webSearch", config.Router.webSearch);
   }
-  return config.Router!.default;
+  return getNextModel("default", config.Router!.default);
 };
 
 export const router = async (req: any, _res: any, config: any) => {

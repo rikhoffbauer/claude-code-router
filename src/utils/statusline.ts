@@ -502,7 +502,10 @@ export async function parseStatusLineData(input: StatusLineInput): Promise<strin
         
         // 从Router字段的default内容中获取模型名称
         if (config.Router && config.Router.default) {
-          const [, defaultModel] = config.Router.default.split(",");
+          const def = Array.isArray(config.Router.default)
+            ? config.Router.default[0]
+            : config.Router.default;
+          const [, defaultModel] = def.split(",");
           if (defaultModel) {
             model = defaultModel.trim();
           }
