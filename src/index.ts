@@ -3,6 +3,13 @@ import { writeFile } from "fs/promises";
 import { homedir } from "os";
 import path, { join } from "path";
 import { initConfig, initDir, cleanupLogFiles } from "./utils";
+import {
+  initApiKeyRotation,
+  getNextApiKey,
+  peekNextApiKey,
+  reportRateLimit,
+  reportSuccess,
+} from "./utils/apiKeyRotation";
 import { createServer } from "./server";
 import { router } from "./utils/router";
 import { apiKeyAuth } from "./middleware/auth";
@@ -54,6 +61,7 @@ async function run(options: RunOptions = {}) {
   // Clean up old log files, keeping only the 10 most recent ones
   await cleanupLogFiles();
   const config = await initConfig();
+  initApiKeyRotation(config);
 
   // Configure logging based on config
   configureLogging(config);
@@ -134,6 +142,18 @@ async function run(options: RunOptions = {}) {
       router(req, reply, config);
     }
   });
+  server.addHook("preHandler", async (req, _reply) => {
+    if (req.url.startsWith("/v1/messages")) {
+      const providerName = (req.body.model || "").split(",")[0];
+      const apiKey = getNextApiKey(providerName);
+      if (apiKey) {
+        (req as any).apiKeyUsed = apiKey;
+        await server.providerService.updateProvider(providerName, {
+          apiKey,
+        });
+      }
+    }
+  });
   server.addHook("onSend", (req, reply, payload, done) => {
     if (req.sessionId && req.url.startsWith("/v1/messages")) {
       if (payload instanceof ReadableStream) {
@@ -176,6 +196,23 @@ async function run(options: RunOptions = {}) {
         done(null, JSON.stringify(payload));
       } else {
         done(null, payload);
+      }
+    }
+  });
+  server.addHook("onResponse", async (req, reply) => {
+    if (req.url.startsWith("/v1/messages")) {
+      const providerName = (req.body.model || "").split(",")[0];
+      const usedKey = (req as any).apiKeyUsed;
+      if (reply.statusCode === 429 && usedKey) {
+        reportRateLimit(providerName, usedKey);
+        const apiKey = peekNextApiKey(providerName);
+        if (apiKey) {
+          await server.providerService.updateProvider(providerName, {
+            apiKey,
+          });
+        }
+      } else if (usedKey) {
+        reportSuccess(providerName, usedKey);
       }
     }
   });

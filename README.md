@@ -13,6 +13,7 @@ I am seeking funding support for this project to better sustain its development.
 
 - **Model Routing**: Route requests to different models based on your needs (e.g., background tasks, thinking, long context).
 - **Multi-Provider Support**: Supports various model providers like OpenRouter, DeepSeek, Ollama, Gemini, Volcengine, and SiliconFlow.
+- **API Key Rotation**: Distribute requests across multiple API keys using round-robin rotation with automatic cooldown and exponential backoff on rate limits.
 - **Request/Response Transformation**: Customize requests and responses for different providers using transformers.
 - **Dynamic Model Switching**: Switch models on-the-fly within Claude Code using the `/model` command.
 - **GitHub Actions Integration**: Trigger Claude Code tasks in your GitHub workflows.
@@ -226,7 +227,7 @@ The `Providers` array is where you define the different model providers you want
 
 - `name`: A unique name for the provider.
 - `api_base_url`: The full API endpoint for chat completions.
-- `api_key`: Your API key for the provider.
+- `api_key`: Your API key for the provider. Can also be an array of keys to rotate through on each request. Keys that hit rate limits are temporarily blacklisted with exponential backoff.
 - `models`: A list of model names available from this provider.
 - `transformer` (optional): Specifies transformers to process requests and responses.
 
